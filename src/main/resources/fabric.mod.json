@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "item-equals-border",
+	"version": "${version}",
+	"name": "Item equals Border",
+	"description": "With every unique item you collect, the world border expands by one block. Can you collect your way all the way to the end?",
+	"authors": [
+		"IVENing"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/item-equals-border/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"itemequalsborder.modid.ItemEqualsBorder"
+		],
+		"client": [
+			"itemequalsborder.modid.client.ItemEqualsBorderClient"
+		]
+	},
+	"mixins": [
+		"item-equals-border.mixins.json",
+		{
+			"config": "item-equals-border.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
