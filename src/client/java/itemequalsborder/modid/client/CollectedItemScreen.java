@@ -6,7 +6,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,8 +14,7 @@ import java.util.List;
 
 public class CollectedItemScreen extends Screen {
     public Screen parent;
-    private static final int GRID_MARGIN_LEFT = 200;
-    private static final int GRID_MARGIN_RIGHT = 200;
+    private static final int SIDEBAR_WIDTH = 155;
 
     public CollectedItemScreen(Component title, Screen parent) {
         super(title);
@@ -24,7 +23,8 @@ public class CollectedItemScreen extends Screen {
 
     @Override
     protected void init() {
-        Button closeButton = Button.builder(Component.literal("X"), button -> onClose()).bounds(this.width - 25, 5, 20, 20).build();
+        Button closeButton = Button.builder(Component.literal("X"), button -> onClose())
+                .bounds(this.width - 25, 5, 20, 20).build();
         this.addRenderableWidget(closeButton);
 
         Button sortButton = Button.builder(
@@ -36,25 +36,22 @@ public class CollectedItemScreen extends Screen {
         ).bounds(5, 5, 150, 20).build();
         this.addRenderableWidget(sortButton);
 
-        List<Item> items = getSortedItems(); // <- statt ClientKnownItemsCache.getItems() + manuellem sort
+        List<Item> items = getSortedItems();
 
-        int columns = 7;
-        int cellSize = 64;
-        int scrollbarPadding = 20;
-
-        int gridWidth = (columns * cellSize) + scrollbarPadding;
-        int startX = (this.width - gridWidth) / 2;
+        int margin = SIDEBAR_WIDTH + 20; // Abstand von BEIDEN Seiten
+        int gridWidth = this.width - (2 * margin);
 
         int startY = 40;
         int gridHeight = this.height - 80;
 
         this.addRenderableWidget(new CollectedItemGridWidget(
-                startX,
-                startY,
-                gridWidth,
-                gridHeight,
-                Component.literal("Items"),
-                items
+                margin, startY, gridWidth, gridHeight,
+                Component.literal("Items"), items
+        ));
+
+        // Sidebar als eigenes Widget, rechts angedockt
+        this.addRenderableWidget(new LeaderboardWidget(
+                this.width - SIDEBAR_WIDTH, startY, SIDEBAR_WIDTH, gridHeight
         ));
     }
 
@@ -66,8 +63,9 @@ public class CollectedItemScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+    public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta); // rendert jetzt auch das LeaderboardWidget
+
         double borderSize = ClientKnownItemsCache.getBorderSize();
         int discoveredItems = ClientKnownItemsCache.getItems().size();
         graphics.text(this.font, "Current Border Size: " + borderSize, 10, 35, 0xFFFFFFFF, true);

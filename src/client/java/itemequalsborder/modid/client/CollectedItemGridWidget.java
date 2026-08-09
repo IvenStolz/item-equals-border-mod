@@ -7,14 +7,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CollectedItemGridWidget extends AbstractScrollArea {
     private final List<CollectedItemWidget> itemWidgets = new ArrayList<>();
-    private final int columns = 7;
     private final int cellSize = 64;
+
+    private int getColumns() {
+        return Math.max(1, this.width / cellSize);
+    }
 
     public CollectedItemGridWidget(int x, int y, int width, int height, Component title, List<Item> items) {
         super(x, y, width, height, title, new AbstractScrollArea.ScrollbarSettings(
@@ -34,7 +38,7 @@ public class CollectedItemGridWidget extends AbstractScrollArea {
     // 1. Teile dem Widget mit, wie hoch der INHALT insgesamt ist
     @Override
     protected int contentHeight() {
-        int rows = (int) Math.ceil((double) itemWidgets.size() / columns);
+        int rows = (int) Math.ceil((double) itemWidgets.size() / getColumns());
         return rows * cellSize;
     }
 
@@ -44,7 +48,7 @@ public class CollectedItemGridWidget extends AbstractScrollArea {
     }
 
     @Override
-    protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+    protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int col = 0;
         int row = 0;
 
@@ -67,7 +71,7 @@ public class CollectedItemGridWidget extends AbstractScrollArea {
             }
 
             col++;
-            if (col >= columns) {
+            if (col >= getColumns()) {
                 col = 0;
                 row++;
             }

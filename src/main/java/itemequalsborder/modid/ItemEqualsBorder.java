@@ -24,10 +24,7 @@ import net.minecraft.world.level.storage.LevelData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 
 public class ItemEqualsBorder implements ModInitializer {
@@ -80,8 +77,8 @@ public class ItemEqualsBorder implements ModInitializer {
 			for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 				for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
 					if (stack.isEmpty()) continue;
-					if (data.registerIfNew(stack.getItem())) {
-						onNewItemDiscovered(server, stack.getItem());
+					if (data.registerIfNew(stack.getItem(), player.getName().getString())) {
+						onNewItemDiscovered(server, stack.getItem(), player);
 					}
 				}
 			}
@@ -89,10 +86,7 @@ public class ItemEqualsBorder implements ModInitializer {
 
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			KnownItemsData data = getKnownItemsData(server.overworld());
-			KnownItemsUpdatePayload payload = new KnownItemsUpdatePayload(
-					List.copyOf(data.getKnownItemsView()),
-					data.getBorderSize()
-			);
+			KnownItemsUpdatePayload payload = buildPayload(data);
 			ServerPlayNetworking.send(handler.player, payload);
 		});
 	}
@@ -126,7 +120,7 @@ public class ItemEqualsBorder implements ModInitializer {
 		}
 	}
 
-	private void onNewItemDiscovered(MinecraftServer server, Item item) {
+	private void onNewItemDiscovered(MinecraftServer server, Item item, ServerPlayer discoverer) {
 		ServerLevel overworld = server.overworld();
 		KnownItemsData data = getKnownItemsData(overworld);
 		WorldBorder border = overworld.getWorldBorder();
@@ -148,17 +142,28 @@ public class ItemEqualsBorder implements ModInitializer {
 		broadcastKnownItems(server, data);
 
 		server.getPlayerList().broadcastSystemMessage(
-				Component.literal("Neues Item entdeckt: " + item.getDefaultInstance().getHoverName().getString()
-						+ " (+" + points + " Punkte)"),
+				Component.literal(discoverer.getName().getString() + " hat entdeckt: "
+						+ item.getDefaultInstance().getHoverName().getString() + " (+" + points + " Punkte)"),
 				false
 		);
 	}
 
+	private KnownItemsUpdatePayload buildPayload(KnownItemsData data) {
+		List<Item> items = new ArrayList<>();
+		List<String> discoverers = new ArrayList<>();
+
+		Map<Item, String> discovererMap = data.getDiscoverersView();
+
+		for (Item item : data.getKnownItemsView()) {
+			items.add(item);
+			discoverers.add(discovererMap.getOrDefault(item, "Unbekannt"));
+		}
+
+		return new KnownItemsUpdatePayload(items, discoverers, data.getBorderSize());
+	}
+
 	private void broadcastKnownItems(MinecraftServer server, KnownItemsData data) {
-		KnownItemsUpdatePayload payload = new KnownItemsUpdatePayload(
-				List.copyOf(data.getKnownItemsView()),
-				data.getBorderSize()
-		);
+		KnownItemsUpdatePayload payload = buildPayload(data);
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			ServerPlayNetworking.send(player, payload);
 		}

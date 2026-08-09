@@ -18,10 +18,10 @@ public class CollectedItemWidget extends AbstractWidget {
         this.stack = stack;
 
         int points = ItemPoints.getPoints(stack.getItem());
+        String discoverer = ClientKnownItemsCache.getDiscoverer(stack.getItem());
         String tooltipText = stack.getHoverName().getString() + "\n" + points + " Punkt";
-        if (points != 1) {
-            tooltipText += "e";
-        }
+        if (points != 1) tooltipText += "e";
+        tooltipText += "\nEntdeckt von: " + discoverer;
         this.setTooltip(Tooltip.create(Component.literal(tooltipText)));
     }
 

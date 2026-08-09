@@ -40,7 +40,7 @@ public class ItemEqualsBorderClient implements ClientModInitializer {
 
 		ClientPlayNetworking.registerGlobalReceiver(KnownItemsUpdatePayload.TYPE, (payload, context) -> {
 			context.client().execute(() ->
-					ClientKnownItemsCache.update(payload.items(), payload.borderSize())
+					ClientKnownItemsCache.update(payload.items(), payload.discoverers(), payload.borderSize())
 			);
 		});
 	}
