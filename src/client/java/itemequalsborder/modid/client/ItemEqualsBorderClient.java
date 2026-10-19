@@ -2,6 +2,7 @@ package itemequalsborder.modid.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import itemequalsborder.modid.KnownItemsUpdatePayload;
+import itemequalsborder.modid.Lang;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -31,10 +32,7 @@ public class ItemEqualsBorderClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (OPEN_COLLECTED_ITEMS.consumeClick()) {
 				Minecraft mc = Minecraft.getInstance();
-				mc.gui.setScreen(new CollectedItemScreen(
-						Component.literal("Gesammelte Items"),
-						mc.gui.screen()
-				));
+				mc.gui.setScreen(new CollectedItemScreen(Lang.tr("screen.title"), mc.gui.screen()));
 			}
 		});
 

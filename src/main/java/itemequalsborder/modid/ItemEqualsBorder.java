@@ -1,14 +1,12 @@
 package itemequalsborder.modid;
 
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -18,7 +16,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.border.WorldBorder;
-
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.LevelData;
 import org.slf4j.Logger;
@@ -26,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-
+/**
+ * Main mod initializer handling server lifecycle events, inventory scanning,
+ * world border expansion, and client-server synchronization.
+ */
 public class ItemEqualsBorder implements ModInitializer {
 	public static final String MOD_ID = "item-equals-border";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -36,29 +36,32 @@ public class ItemEqualsBorder implements ModInitializer {
 
 	private int tickCounter = 0;
 
-	private final Map<UUID, BlockPos> lastOverworldPos = new HashMap<>();
-
+	/**
+	 * Initializes item point configurations, networking payloads, and server event listeners.
+	 */
 	@Override
 	public void onInitialize() {
 		ItemPoints.load();
 		PayloadTypeRegistry.clientboundPlay().register(KnownItemsUpdatePayload.TYPE, KnownItemsUpdatePayload.CODEC);
-		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 
+		// Configure world spawn and initialize world borders when the server starts
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 			ServerLevel level = server.overworld();
 
-			// Set Worldspawn to 0,0
+			// Set world spawn to (0, surface, 0) with zero respawn radius
 			int surfaceHeight = level.getChunkSource().getGenerator().getSpawnHeight(level);
 			BlockPos exactSpawn = new BlockPos(0, surfaceHeight, 0);
 			LevelData.RespawnData respawnData = LevelData.RespawnData.of(level.dimension(), exactSpawn, 0.0F, 0.0F);
 			level.setRespawnData(respawnData);
 			server.getGameRules().set(GameRules.RESPAWN_RADIUS, 0, server);
 
-			// Set Border
+			// Apply saved border state to the Overworld
 			KnownItemsData data = getKnownItemsData(level);
 			WorldBorder overworldBorder = level.getWorldBorder();
-			overworldBorder.setCenter(0.5, 0.5); // Overworld-Border bleibt bei 0,0 (Spawn)
+			overworldBorder.setCenter(0.5, 0.5);
 			overworldBorder.setSize(data.getBorderSize());
 
+			// Apply saved border state to the Nether if already unlocked
 			if (data.hasReachedNether()) {
 				ServerLevel nether = server.getLevel(Level.NETHER);
 				if (nether != null) {
@@ -67,12 +70,13 @@ public class ItemEqualsBorder implements ModInitializer {
 					netherBorder.setSize(data.getBorderSize());
 				}
 			}
-
 		});
 
+		// Periodically check for Nether entry and scan player inventories for new items
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			checkNetherEntry(server);
 			if (++tickCounter % 10 != 0) return;
+
 			KnownItemsData data = getKnownItemsData(server.overworld());
 			for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 				for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
@@ -84,6 +88,7 @@ public class ItemEqualsBorder implements ModInitializer {
 			}
 		});
 
+		// Sync known items and border state to players when they join the server
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			KnownItemsData data = getKnownItemsData(server.overworld());
 			KnownItemsUpdatePayload payload = buildPayload(data);
@@ -91,17 +96,21 @@ public class ItemEqualsBorder implements ModInitializer {
 		});
 	}
 
+	/**
+	 * Checks if any player has entered the Nether for the first time and centers
+	 * the Nether world border at their arrival coordinates.
+	 */
 	private void checkNetherEntry(MinecraftServer server) {
 		ServerLevel overworld = server.overworld();
 		KnownItemsData data = getKnownItemsData(overworld);
 
-		if (data.hasReachedNether()) return; // spart unnötige Arbeit, sobald einmal gesetzt
+		if (data.hasReachedNether()) return;
 
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			ResourceKey<Level> dimension = player.level().dimension();
 
 			if (dimension.equals(Level.NETHER)) {
-				BlockPos arrivalPos = player.blockPosition(); // aktuelle Position IM Nether
+				BlockPos arrivalPos = player.blockPosition();
 
 				if (data.setNetherBorderIfFirstEntry(arrivalPos.getX() + 0.5, arrivalPos.getZ() + 0.5)) {
 					ServerLevel nether = (ServerLevel) player.level();
@@ -112,7 +121,7 @@ public class ItemEqualsBorder implements ModInitializer {
 					broadcastKnownItems(server, data);
 
 					server.getPlayerList().broadcastSystemMessage(
-							Component.literal(player.getName().getString() + " hat zum ersten Mal den Nether betreten – Border-Zentrum im Nether gesetzt!"),
+							Lang.tr("message.nether_entered", player.getName()),
 							false
 					);
 				}
@@ -120,6 +129,10 @@ public class ItemEqualsBorder implements ModInitializer {
 		}
 	}
 
+	/**
+	 * Expands the world border, updates persistent state, and notifies all players
+	 * when a new item is discovered.
+	 */
 	private void onNewItemDiscovered(MinecraftServer server, Item item, ServerPlayer discoverer) {
 		ServerLevel overworld = server.overworld();
 		KnownItemsData data = getKnownItemsData(overworld);
@@ -142,12 +155,17 @@ public class ItemEqualsBorder implements ModInitializer {
 		broadcastKnownItems(server, data);
 
 		server.getPlayerList().broadcastSystemMessage(
-				Component.literal(discoverer.getName().getString() + " hat entdeckt: "
-						+ item.getDefaultInstance().getHoverName().getString() + " (+" + points + " Punkte)"),
+				Lang.tr("message.discovered",
+						discoverer.getName(),
+						item.getDefaultInstance().getHoverName(),
+						points),
 				false
 		);
 	}
 
+	/**
+	 * Constructs the network payload containing discovered items, their discoverers, and border size.
+	 */
 	private KnownItemsUpdatePayload buildPayload(KnownItemsData data) {
 		List<Item> items = new ArrayList<>();
 		List<String> discoverers = new ArrayList<>();
@@ -156,12 +174,15 @@ public class ItemEqualsBorder implements ModInitializer {
 
 		for (Item item : data.getKnownItemsView()) {
 			items.add(item);
-			discoverers.add(discovererMap.getOrDefault(item, "Unbekannt"));
+			discoverers.add(discovererMap.getOrDefault(item, ""));
 		}
 
 		return new KnownItemsUpdatePayload(items, discoverers, data.getBorderSize());
 	}
 
+	/**
+	 * Sends the updated known items payload to all connected players.
+	 */
 	private void broadcastKnownItems(MinecraftServer server, KnownItemsData data) {
 		KnownItemsUpdatePayload payload = buildPayload(data);
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -169,10 +190,16 @@ public class ItemEqualsBorder implements ModInitializer {
 		}
 	}
 
+	/**
+	 * Retrieves or creates the persistent {@link KnownItemsData} storage for the given level.
+	 */
 	private KnownItemsData getKnownItemsData(ServerLevel level) {
 		return level.getDataStorage().computeIfAbsent(KnownItemsData.TYPE);
 	}
 
+	/**
+	 * Creates a namespaced {@link Identifier} for this mod.
+	 */
 	public static Identifier id(String path) {
 		return Identifier.fromNamespaceAndPath(MOD_ID, path);
 	}

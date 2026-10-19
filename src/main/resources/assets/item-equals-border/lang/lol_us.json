@@ -1,0 +1,24 @@
+{
+  "key.item-equals-border.open_collected": "SHOW ME COLLECTD TOYZ",
+  "key.category.item-equals-border.test": "TOYZ MAKE PLAYGROUND BIGGER",
+
+  "item-equals-border.screen.title": "COLLECTD TOYZ",
+  "item-equals-border.screen.items": "TOYZ",
+  "item-equals-border.screen.border_size": "HOW BIG IS MY PLAYGROUND: %s",
+  "item-equals-border.screen.item_count": "THIS MUCH TOYZ: %s",
+  "item-equals-border.screen.search": "LOOKIN FUR...",
+  "item-equals-border.button.close": "X",
+  "item-equals-border.button.sort": "SORTY-SORTY: %s",
+  "item-equals-border.checkbox.discovered": "MY TOYZ",
+  "item-equals-border.checkbox.undiscovered": "NOT MY TOYZ (YET)",
+  "item-equals-border.sort.alphabetical": "A-Z",
+  "item-equals-border.sort.points": "TREATS",
+  "item-equals-border.leaderboard.title": "BEST CATZ",
+  "item-equals-border.points.one": "%s TREAT",
+  "item-equals-border.points.other": "%s TREATS",
+  "item-equals-border.tooltip.discovered_by": "THIS CAT FOUND IT: %s",
+  "item-equals-border.tooltip.undiscovered": "NO CAT PLAYED WIT DIS YET",
+  "item-equals-border.discoverer.unknown": "WHAT IS THAT? *HISS*",
+  "item-equals-border.message.discovered": "%s FOUNDED NEW TOY: %s (+%s TREATS)",
+  "item-equals-border.message.nether_entered": "%s WENT INTO TEH NETHR (FIRST CAT) – MAKED PLAYGROUND MIDDLE IN TEH NETHR"
+}

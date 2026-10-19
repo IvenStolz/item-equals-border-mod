@@ -6,10 +6,10 @@ import java.util.Map;
 public class ItemPointsConfig {
     public int defaultPoints = 1;
 
-    // Item-ID (z.B. "minecraft:diamond") -> Punkte
+    // Item-ID
     public Map<String, Integer> itemPoints = new LinkedHashMap<>();
 
-    // Tag-ID (z.B. "minecraft:swords") -> Punkte
+    // Tag-ID
     public Map<String, Integer> tagPoints = new LinkedHashMap<>();
 
     public static ItemPointsConfig createDefault() {

@@ -30,30 +30,26 @@ public class ItemPoints {
 
     public static void load() {
         try {
-            // Wenn die Config beim Spieler noch nicht existiert
             if (!Files.exists(CONFIG_PATH)) {
                 Files.createDirectories(CONFIG_PATH.getParent());
 
-                // Versuche, das große JSON aus deinen Mod-Ressourcen zu kopieren
                 try (java.io.InputStream in = ItemPoints.class.getResourceAsStream("/item-equals-border.json")) {
                     if (in != null) {
                         Files.copy(in, CONFIG_PATH);
                     } else {
-                        // Fallback, falls die JSON-Datei im resources-Ordner fehlt
                         config = ItemPointsConfig.createDefault();
                         save();
                     }
                 }
             }
 
-            // Normale Lade-Logik (liest die nun vorhandene Datei ein)
             if (Files.exists(CONFIG_PATH)) {
                 try (Reader reader = Files.newBufferedReader(CONFIG_PATH)) {
                     config = GSON.fromJson(reader, ItemPointsConfig.class);
                 }
             }
         } catch (IOException e) {
-            ItemEqualsBorder.LOGGER.error("Konnte item-equals-border.json nicht laden, nutze Defaults", e);
+            ItemEqualsBorder.LOGGER.error("Couldn't load item-equals-border.json, uses Defaults", e);
             config = ItemPointsConfig.createDefault();
         }
 
@@ -77,7 +73,7 @@ public class ItemPoints {
             if (item.isPresent()) {
                 resolvedItemPoints.put(item.get(), entry.getValue());
             } else {
-                ItemEqualsBorder.LOGGER.warn("Unbekanntes Item in item-equals-border.json: {}", entry.getKey());
+                ItemEqualsBorder.LOGGER.warn("Unknown Item in item-equals-border.json: {}", entry.getKey());
             }
         }
 

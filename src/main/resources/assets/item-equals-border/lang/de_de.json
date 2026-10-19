@@ -1,0 +1,24 @@
+{
+  "key.item-equals-border.open_collected": "Gesammelte Items öffnen",
+  "key.category.item-equals-border.test": "Item Equals Border",
+
+  "item-equals-border.screen.title": "Gesammelte Items",
+  "item-equals-border.screen.items": "Items",
+  "item-equals-border.screen.border_size": "Aktuelle Border-Größe: %s",
+  "item-equals-border.screen.item_count": "Anzahl Items: %s",
+  "item-equals-border.screen.search": "Suche...",
+  "item-equals-border.button.close": "X",
+  "item-equals-border.button.sort": "Sortierung: %s",
+  "item-equals-border.checkbox.discovered": "Entdeckt",
+  "item-equals-border.checkbox.undiscovered": "Unentdeckt",
+  "item-equals-border.sort.alphabetical": "A-Z",
+  "item-equals-border.sort.points": "Punkte",
+  "item-equals-border.leaderboard.title": "Rangliste",
+  "item-equals-border.points.one": "%s Punkt",
+  "item-equals-border.points.other": "%s Punkte",
+  "item-equals-border.tooltip.discovered_by": "Entdeckt von: %s",
+  "item-equals-border.tooltip.undiscovered": "Noch nicht entdeckt",
+  "item-equals-border.discoverer.unknown": "Unbekannt",
+  "item-equals-border.message.discovered": "%s hat entdeckt: %s (+%s Punkte)",
+  "item-equals-border.message.nether_entered": "%s hat zum ersten Mal den Nether betreten – Border-Zentrum im Nether gesetzt!"
+}

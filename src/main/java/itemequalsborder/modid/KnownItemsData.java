@@ -32,7 +32,7 @@ public class KnownItemsData extends SavedData {
         this.netherBorderCenterZ = netherBorderCenterZ;
     }
 
-    // true = das Item war neu
+    // true = item was new
     public boolean registerIfNew(Item item, String discoverer) {
         boolean wasNew = knownItems.add(item);
         if (wasNew) {
