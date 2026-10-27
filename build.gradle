@@ -6,6 +6,13 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
+def minecraftVersion = project.minecraft_version
+def libraryJar = file("src/betterborderlib-1.0.0-mc${minecraftVersion}.jar")
+
+if (!libraryJar.isFile()) {
+	throw new GradleException("Missing BetterBorderLib for Minecraft ${minecraftVersion}: ${libraryJar}")
+}
+
 repositories {
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
@@ -32,14 +39,17 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	implementation files(libraryJar)
 }
 
 processResources {
 	def version = project.version
 	inputs.property "version", version
+	inputs.property "minecraft_version", minecraftVersion
 
 	filesMatching("fabric.mod.json") {
-		expand "version": version
+		expand "version": version, "minecraft_version": minecraftVersion
 	}
 }
 
@@ -58,6 +68,8 @@ java {
 }
 
 jar {
+	archiveClassifier = "mc${minecraftVersion}"
+
 	def projectName = project.name
 	inputs.property "projectName", projectName
 
